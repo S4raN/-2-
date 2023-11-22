@@ -1,0 +1,335 @@
+# define M_PI
+#include <iostream>
+#include <concepts>
+#include <math.h>
+#include <stdlib.h>
+#include <cstdarg> 
+using namespace std;
+
+template<typename T>
+class Vector
+{
+private:
+    T* Arr;
+    int length;
+    int capacity;
+public:
+    Vector() : length(0), capacity(1)
+    {
+        //this->length = length; если бы было это то пришлось бы задвать длинну по умолчанию при объявлении вектора
+        Arr = new T[capacity];
+    }
+    ~Vector() {
+        delete[] Arr;
+    }
+    void push_back(const T& value) {
+        if (length == capacity) {
+            capacity *= 2;
+            T* newArr = new T[capacity];
+            for (int i = 0; i < length; i++) {
+                newArr[i] = Arr[i];
+            }
+            for (int i = length; i < capacity; i++) {
+                newArr[i] = 0;
+            }
+            delete[] Arr;
+            Arr = newArr;
+        }
+        Arr[length++] = value;
+    }
+    void erase(int index) {
+        for (int i = index; i < length - 1; i++) {
+            Arr[i] = Arr[i + 1];
+        }
+        length--;
+    }
+    int size() {
+        return capacity;
+        //return length;
+    }
+    void resizee(int value) {
+        if (value < capacity) {
+            return;
+        }
+        capacity = value;
+        T* newArr = new T[capacity];
+        for (int i = 0; i < length; i++) {
+            newArr[i] = Arr[i];
+        }
+        delete[] Arr;
+        Arr = newArr;
+        int minSize = (value < length) ? value : length;
+        capacity = value;
+        //length = value;
+        
+    }
+
+    friend ostream& operator<<(ostream& out, const Vector<T>& vec) {
+        for (int i = 0; i < vec.length; i++) {
+            out << vec.Arr[i] << " ";
+        }
+        return out;
+    }
+    Vector<T> operator+(const Vector<T>& vec2) const {
+        Vector<T> result;
+        int MaxLen;
+        if (length > vec2.length) {
+            MaxLen = length;
+        }
+        else {
+            MaxLen = vec2.length;
+        }
+        result.resize(MaxLen);
+        result.length = MaxLen;
+        if (vec2.capacity > capacity) {
+            for (int i = 0; i < length; i++) {
+                result.Arr[i] = Arr[i] + vec2.Arr[i];
+            }
+            for (int i = length; i < MaxLen; i++) {
+                result.Arr[i] = 0;
+            }
+        }
+        if (vec2.capacity < capacity) {
+            for (int i = 0; i < vec2.length; i++) {
+                result.Arr[i] = Arr[i] + vec2.Arr[i];
+            }
+            for (int i = vec2.length; i < MaxLen; i++) {
+                result.Arr[i] = 0;
+            }
+        }
+        else {
+            for (int i = 0; i < MaxLen; i++) {
+                result.Arr[i] = Arr[i] + vec2.Arr[i];
+            }
+        }
+        return result;
+    }
+    Vector<T> operator*(const Vector<T>& vec2) const {
+        Vector<T> result;
+        int MaxLen;
+        if (length > vec2.length) {
+            MaxLen = length;
+        }
+        else {
+            MaxLen = vec2.length;
+        }
+        result.resize(MaxLen);
+        if (vec2.capacity > capacity) {
+            for (int i = 0; i < length; i++) {
+                result.Arr[i] = Arr[i] * vec2.Arr[i];
+            }
+            for (int i = length; i < MaxLen; i++) {
+                result.Arr[i] = 0;
+            }
+        }
+        if (vec2.capacity < capacity) {
+            for (int i = 0; i < vec2.length; i++) {
+                result.Arr[i] = Arr[i] * vec2.Arr[i];
+            }
+            for (int i = vec2.length; i < MaxLen; i++) {
+                result.Arr[i] = 0;
+            }
+        }
+        else {
+            for (int i = 0; i < MaxLen; i++) {
+                result.Arr[i] = Arr[i] * vec2.Arr[i];
+            }
+        }
+        return result;
+    }
+};
+
+template<typename T>
+concept Add = requires(T a, T b) {
+    {a + b} -> convertible_to<T>;
+};
+template<typename T>
+concept Mult = requires(T a, T b) {
+    {a* b} -> convertible_to<T>;
+};
+
+template<class T>
+concept AddMult = Add<T> && Mult<T>;
+
+template<class T, size_t S>
+class FixedVector  {
+private:
+    T* Arr;
+    int length;
+    int capacity;
+public:
+    FixedVector() {
+        this->resizee(S);
+    }
+    
+    void push_back(const T& value) {
+        if (length < capacity) {
+            Arr[length++] = value;
+        }
+        
+    }
+    void erase(int index) {
+        for (int i = index; i < length - 1; i++) {
+            Arr[i] = Arr[i + 1];
+        }
+        length--;
+    }
+    int size() {
+        return capacity;
+        //return length;
+    }
+    void resizee(int value) {
+        if (value < capacity) {
+            return;
+        }
+        capacity = value;
+        T* newArr = new T[capacity];
+        for (int i = 0; i < length; i++) {
+            newArr[i] = Arr[i];
+        }
+        delete[] Arr;
+        Arr = newArr;
+        int minSize = (value < length) ? value : length;
+        capacity = value;
+        //length = value;
+
+    }
+
+    friend ostream& operator<<(ostream& out, const FixedVector<T,S>& vec) {
+        for (int i = 0; i < vec.length; i++) {
+            out << vec.Arr[i] << " ";
+        }
+        return out;
+    }
+    T& operator[](int index)const//как бэ для одномерного массива(на прямую :))
+    {
+        if (index >= 0 && index < length)
+            return Arr[index];
+        else
+            exit(1);
+    }
+    double Distance( FixedVector<T,S> vec) {
+        if (S == 2 && vec.size() == 2) {
+            double result = pow((pow(Arr[0] - vec[0], 2) + pow(Arr[1] - vec[1], 2)), 0.5);
+            // You might want to do something with the 'result' here
+            
+            return result;
+        }
+        else {
+            return 0;
+        }
+        
+    }
+};
+
+class Coordinate  {
+private:
+    double X;
+    double Y;
+public:
+    Coordinate() {}
+    Coordinate(double X, double Y): X(1), Y(1){}
+    double getX(){
+        return X;
+    }
+    double getY() {
+        return Y;
+    }
+    double getXrads() const{
+        return X * 3.14 / 180;
+    }
+    double getYrads() const{
+        return Y * 3.14 / 180;
+    }
+};
+template<>
+class FixedVector<Coordinate, 2> {
+private:
+    Coordinate data[2];
+public:
+    FixedVector(){}
+    FixedVector(const Coordinate& coordinate1, const Coordinate& coordinate2) {
+        data[0] = coordinate1;
+        data[1] = coordinate2;
+    }
+
+    const Coordinate& operator[](std::size_t index) const {
+        return data[index];
+    }
+
+    
+    double distance(FixedVector<Coordinate, 2>& other) {
+        double lat1 = data[0].getXrads();
+        double lon1 = data[1].getYrads();
+        double lat2 = other[0].getXrads();
+        double lon2 = other[1].getYrads();
+
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+
+        double a = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
+        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+        const double earthRadius = 6371.0; 
+        return earthRadius * c;
+    }
+};
+
+template <typename T>
+concept Comp1 = requires(T a, T b) {
+    { a == b } -> std::convertible_to<bool>;
+};
+template <typename T>
+concept Comp2 = requires(T a, T b) {
+    { a > b } -> std::convertible_to<bool>;
+};
+template <typename T>
+concept Comp3 = requires(T a, T b) {
+    { a < b } -> std::convertible_to<bool>;
+};
+
+template<typename T>
+requires Comp1<T> && Comp2<T> && Comp3<T>
+int Func(int N, ...) {
+    va_list args;
+    va_start(args, N);
+    int result=0;
+    int a = 0;
+    for (int i = 0; i < N; i++) {
+        int num = va_arg(args, int);
+        if (a < num) {
+            result = 1;
+            a = 0;
+        }
+        else {
+            result = 0;
+            break;
+        }
+        a += num;
+        //result += num;
+    }
+    va_end(args);
+    return result;
+};
+
+
+
+int main()
+{
+    FixedVector<int,2> vec;
+    vec.push_back(20);
+    vec.push_back(35);
+    //vec.push_back(3);
+    //vec.push_back(3);
+    //vec.push_back(3);
+    //vec.push_back(3);
+    FixedVector<Coordinate, 2> vec2();
+    vec2.push_back(51);
+    vec2.push_back(27);
+    //cout << vec.Distance(vec2);
+    //cout << vec.size() << vec2.size();
+    cout << vec.Distance(vec2);
+
+    //int res = Func<int>(3, 1, 27, 3, 2372);
+    //cout << res;
+}
