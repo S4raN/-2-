@@ -1,0 +1,61 @@
+#include <iostream>
+#include <cmath>
+#include <stdexcept>
+#include <typeinfo>
+#include <vector>
+
+int main() {
+      try {
+            // std::bad_alloc - нехватка памяти
+        int *arr = new int[10000000000000000];
+            delete[] arr;
+       
+  } catch (const std::bad_alloc &e) {
+            std::cout << "std::bad_alloc caught: " << e.what() << std::endl;
+       
+  }
+      
+    try {
+            // std::out_of_range - выход за границы контейнера std::vector
+        std::vector<int> vec = {1, 2, 3};
+            int value = vec.at(10);
+       
+  } catch (const std::out_of_range &e) {
+            std::cout << "std::out_of_range caught: " << e.what() << std::endl;
+       
+  }
+      
+    try {
+            // std::domain_error - некорректные аргументы для математической функции
+        double result = std::sqrt(-1);
+       
+  } catch (const std::domain_error &e) {
+            std::cout << "std::domain_error caught: " << e.what() << std::endl;
+       
+  }
+      
+    try {
+            // std::bad_cast - некорректное приведение типов
+        class Parent {
+                  virtual void foo() {}
+             
+    };
+            
+        class Child : public Parent {void foo(){}};
+            
+        Parent *parent = new Child;
+        Child *child = dynamic_cast<Child *>(parent);
+          
+        if (child == nullptr) {
+             
+    }
+            
+        delete parent;
+       
+  } catch (const std::bad_cast &e) {
+            std::cout << "std::bad_cast caught: " << e.what() << std::endl;
+       
+  }
+      
+    return 0;
+}
