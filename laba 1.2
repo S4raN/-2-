@@ -1,0 +1,67 @@
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+class ErrorHandler {
+public:
+  explicit ErrorHandler(const std::string &errorMessage) {
+    logFile.open("error_log.txt", std::ios::app);
+    log(errorMessage);
+  }
+
+  void log(const std::string &errorMessage) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    std::cout << "Error: " << errorMessage << std::endl;
+    logFile << "Error: " << errorMessage << " (" << std::ctime(&time) << ")";
+  }
+
+private:
+  std::ofstream logFile;
+};
+
+void processFile(const std::string &filename) {
+  std::ifstream file(filename);
+  if (!file) {
+    throw ErrorHandler("Failed to open file");
+  }
+
+  int col1, col2;
+  while (file >> col1) {
+    if (file >> col2) {
+      if (col2 == 0) {
+        ErrorHandler errorHandler("Division by zero");
+        continue;
+      }
+
+      double result = static_cast<double>(col1) / col2;
+      std::cout << "Result: " << result << std::endl;
+    } else {
+      ErrorHandler errorHandler("Invalid line");
+      std::string invalidData;
+      getline(file, invalidData);
+      std::cout << "Skipping invalid line: " << invalidData << std::endl;
+    }
+  }
+
+  if (file.bad()) {
+    throw ErrorHandler("Error while reading file");
+  }
+
+  file.close();
+}
+
+int main() {
+  std::string filename;
+  std::cout << "Enter filename: ";
+  std::cin >> filename;
+
+  try {
+    processFile(filename);
+  } catch (const ErrorHandler &errorHandler) {
+    // Error already logged in the ErrorHandler class
+  }
+
+  return 0;
+}
