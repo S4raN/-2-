@@ -1,0 +1,116 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <ctime>
+using namespace std;
+struct Point {
+    int x;
+    int y;
+
+    int index;
+
+    // 1) Перегружаем оператора < для сравнения точек
+    bool operator<(const Point& other) const {
+        if (x < other.x)
+            return true;
+        else if (x == other.x)
+            return y < other.y;
+        else
+            return false;
+    }
+
+    // 2) Перегружаем оператора == для сравнения точек
+    bool operator==(const Point& other) const {
+        return x == other.x && y == other.y;
+    }
+};
+
+// 3) Пишем функцию для печати всех элементов и количества точек в векторе
+void printPoints(const vector<Point>& points) {
+    cout << "Количество точек: " << points.size() << endl;
+    for (const auto& point : points) {
+        cout << "(" << point.x << ", " << point.y << ")" << endl;
+    }
+}
+
+int main() {
+  setlocale(LC_ALL, "RU");
+    // 4) Задаем параметры для генерации (рандомных) случайных чисел
+    mt19937 rng(time(nullptr));
+    uniform_int_distribution<int> dist(1, 100);
+
+    // 5) Запрашиваем у пользователя количество точек и диапазон значений
+    int numPoints;
+    int minValue, maxValue;
+    cout << "Введите количество точек: ";
+    cin >> numPoints;
+    cout << "Введите минимальное значение: ";
+    cin >> minValue;
+    cout << "Введите максимальное значение: ";
+    cin >> maxValue;
+
+    // 6) Генерируем первый вектор точек
+    vector<Point> points1;
+    for (int i = 0; i < numPoints; ++i) {
+        Point point;
+        point.x = dist(rng);
+        point.y = dist(rng);
+        points1.push_back(point);
+    }
+
+   cout << points1.size() << " " << points1.capacity() << endl;
+
+    // 7) Генерируем второй вектор точек
+    vector<Point> points2;
+    for (int i = 0; i < numPoints; ++i) {
+        Point point;
+        point.x = dist(rng);
+        point.y = dist(rng);
+        points2.push_back(point);
+    }
+
+    // 8) Печатаем первый вектор точек
+    cout << "Первый вектор точек:" << endl;
+    printPoints(points1);
+
+    // 9) Печатаем второй вектор точек
+    cout << "Второй вектор точек:" << endl;
+    printPoints(points2);
+
+    // 10) Сортируем оба вектора точек с использованием stable_sort
+    stable_sort(points1.begin(), points1.end());
+    stable_sort(points2.begin(), points2.end());
+
+    // 111) Печатаем отсортированные векторы точек
+    cout << "Отсортированный первый вектор точек:" << endl;
+    printPoints(points1);
+    cout << "Отсортированный второй вектор точек:" << endl;
+    printPoints(points2);
+
+    int value = 10;
+    // 12) Подсчитываем число точек из первого вектора, у которых сумма координат меньше 10
+    int count = count_if(points1.begin(), points1.end(), [value](const Point& point) {
+        return point.x + point.y < value;
+    });
+    cout << "Число точек с суммой координат меньше 10: " << count << endl;
+
+    // 13) Создаем третий вектор и делаем его объединение (с учетом порядка) с первыми двумя векторами
+    vector<Point> points3;
+    points3.reserve(points1.size() + points2.size());
+    set_union(points1.begin(), points1.end(), points2.begin(), points2.end(), back_inserter(points3));
+
+    // 14) Печатаем третий вектор точек
+    cout << "Третий вектор точек (объединение):" << endl;
+    printPoints(points3);
+
+    // 15) Удаляем повторяющиеся точки из третьего вектора
+    auto uniqueEnd = unique(points3.begin(), points3.end());
+    points3.erase(uniqueEnd, points3.end());
+
+    // 16) Печатаем третий вектор точек после удаления повторов
+    cout << "Третий вектор точек (уникальные):" << endl;
+    printPoints(points3);
+
+    return 0;
+}
